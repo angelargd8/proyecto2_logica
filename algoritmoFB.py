@@ -29,3 +29,27 @@ def evaluar_fórmula(fórmula, asignación):
     
     # Si todas las cláusulas son verdaderas con la asignación dada, la fórmula es satisfacible.
     return True
+
+def mostrar_resultado(formula_num, formula, resultado, asignacion):
+    print(f"Fórmula {formula_num}: {formula}")
+    if resultado:
+        print(f"Satisfacible con asignación: {asignacion}")
+    else:
+        print("Insatisfacible con asignación vacía.")
+
+formulas = [
+    [{1, 2, 3}, {-1, -2}, {1, -3}],        
+    [{1, -2}, {2, -3}, {-1, 3}, {-3}],      
+    [{-1, 2}, {1, -3}, {3}],                
+    [{-1, -2, -3}, {-1, 2, 3}, {1, -2}],    
+    [{1, 2}, {-1, 3}, {-2, 3}, {-3}],       
+    [{-1, 2}, {-2, 3}, {-3, 4}, {-4}],      
+    [{1}, {-1}, {2}, {-2}],                 
+    [{1, -2, 3}, {-1, 2}, {2, -3}],         
+]
+
+# Iterar sobre cada fórmula, evaluar y mostrar el resultado
+for i, formula in enumerate(formulas, start=1):
+    resultado, asignacion = es_satisfacible(formula)
+    mostrar_resultado(i, formula, resultado, asignacion)
+    print()  
