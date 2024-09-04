@@ -32,22 +32,25 @@ def DPLL(B, I):
     I_prim[abs(L)] = L > 0
     
     # Llamada recursiva a DPLL con B' e I'
-    resultado, I1 = DPLL(B_prima, I_prim)
+    resultado, I0 = DPLL(B_prima, I_prim)
     if resultado:
-        return True, I1
+        return True, I0
     
     # Eliminar todas las cláusulas que contienen el literal complementario L en B y las ocurrencias del literal L en B
     B_prima = eliminar_literal(-L, B)
-    
-    # I' = I ∪ {valor de L es falso}
+
+    # I' = I ∪ {valor de L es falso }
     I_prim = I.copy()
     I_prim[abs(L)] = L < 0
-    
+
+    # el resultado de I1 <- DPLL(B', I') es verdadero, entonces regresar verdadero e I1
     # Llamada recursiva a DPLL con B' e I'
-    resultado, I2 = DPLL(B_prima, I_prim)
-    if resultado:
-        return True, I2
+    resultado, I1 = DPLL(B_prima, I_prim)
     
+    #si el resultado es verdader, entonces regresar True e I2
+    if resultado:
+        return True, I1
+        
     # Regresar False y la asignación vacía o nula
     return False, None
 
