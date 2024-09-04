@@ -2,119 +2,94 @@
 #entrada: una formula boleana A en formas de clausalas e asignacion vacia
 #salida: reporta si A es unsatisfacible con asignacion prcial vacia o si A es satisfacible.
 #verdadero si A es satisfacible, falso si A no es satisfacible
+
 def DPLL(B, I): 
-    #B: formula booleana en forma de clausalas
-    #I: asignacion parcial
-    #A es formula y la asignacion parcial vacia
-    
-    #Si B es vacia, entonces regresar true e I
+    # Propagación de unidades
+    while True:
+        unit_clauses = [c for c in B if len(c) == 1]
+        if not unit_clauses:
+            break
+        for clause in unit_clauses:
+            literal = clause[0]
+            B = eliminar_literal(literal, B)
+            I[abs(literal)] = literal > 0
+            
+    # Si B es vacía, entonces regresar true e I
     if len(B) == 0:
         return True, I
-    #si hay laguna disyuncion vacia en B, entonces regresar false e I
-    if [] in B:
-        I = None
-        return False, I
     
-    #L <- conjunto de literales en B 
-    #L <- seleccionar_literal(B) #pone en forma positiva
-    #el algoritmo DPLL es no deterministico: se debe seleccionr una literal 
-    #no asignada en la asignacion parcial y luego seleccionar el valor de verdad
+    # Si hay alguna disyunción vacía en B, regresar false e I
+    if [] in B:
+        return False, None
+    
+    # Seleccionar literal no asignado
     L = seleccionar_literal(B)
-
-    #elimine todas las clausulas que contiene la literal L en B y 
-    # elimine las ocurrencias en las clausulas de la literl complementaria de L en B, 
-    # construyendo B'
-    #B' <- B con L eliminado
+    
+    # Eliminar todas las cláusulas que contienen el literal L en B y las ocurrencias de -L en B
     B_prima = eliminar_literal(L, B)
     
-    # I' = I ∪ {valor de L es verdadero}
+    # Asignar L como verdadero
     I_prim = I.copy()
     I_prim[abs(L)] = L > 0
     
-    # Llamada recursiva a DPLL con B' e I'
+    # Llamada recursiva
     resultado, I0 = DPLL(B_prima, I_prim)
     if resultado:
         return True, I0
     
-    # Eliminar todas las cláusulas que contienen el literal complementario L en B y las ocurrencias del literal L en B
+    # Intentar asignar L como falso
     B_prima = eliminar_literal(-L, B)
-
-    # I' = I ∪ {valor de L es falso }
     I_prim = I.copy()
     I_prim[abs(L)] = L < 0
-
-    # el resultado de I1 <- DPLL(B', I') es verdadero, entonces regresar verdadero e I1
-    # Llamada recursiva a DPLL con B' e I'
-    resultado, I1 = DPLL(B_prima, I_prim)
     
-    #si el resultado es verdader, entonces regresar True e I2
+    # Llamada recursiva
+    resultado, I1 = DPLL(B_prima, I_prim)
     if resultado:
         return True, I1
-        
-    # Regresar False y la asignación vacía o nula
+    
     return False, None
 
 def eliminar_literal(L, B):
-    #L: literal
-    #B: formula booleana en forma de clausalas
-    #regresa B con L eliminado
     B_prima = []
     for clausula in B:
         if L not in clausula:
             nueva_clausula = [x for x in clausula if x != -L]
-            if nueva_clausula:  # Solo agrega la cláusula si no está vacía
-                B_prima.append(nueva_clausula)
+            B_prima.append(nueva_clausula)
     return B_prima
 
 def seleccionar_literal(B):
-    #B: formula booleana en forma de clausalas
-    #regresa un literal en B
-    #L <- conjunto de literales en B 
+    # Selecciona el primer literal no asignado
     for clausula in B:
         for literal in clausula:
             return literal
     return None
 
-
-def parse_formula(formula_str):
-    # Convierte una cadena de texto en una lista de listas de enteros
-    formula_str = formula_str.replace("{", "").replace("}", "")
-    clausulas = formula_str.split(", ")
-    formula = []
-    for clausula in clausulas:
-        literales = clausula.split(",")
-        formula.append([int(literal) for literal in literales])
-    return formula
-
-# forma_clausal = [
-    #"{{p},{¬p}}",
-    #"{{q,p,¬p}}",
-    #"{{¬p,¬r,s},{¬q,p,s}}",
-    #"{{¬p,q},{q,s},{¬p,s},{¬q,s}}",
-   # "{{¬p,q,¬r},{q,¬r,p},{¬p,q,r}}",
-  #  "{{r},{q,r},{p,q,¬r},{q}}"
-#]
+def formato_conjunto(formula):
+    # Convierte una lista de listas en un conjunto de conjuntos
+    return [{literal for literal in clausula} for clausula in formula]
 
 def main():
+    # Fórmulas en forma clausal
     forma_clausal = [
-        "{{1}, {-1}}",
-        "{0}",
-        "{{2, 1, -1}}",
-        "{{-1, -3, 4}, {-2, 1, 4}}",
-        "{{-1, 2}, {2, 4}, {-1, 4}, {-2, 4}}",
-        "{{-1, 2, -3}, {2, -3, 1}, {-1, 2, 3}}",
-        "{{3}, {2, 3}, {1, 2, -3}, {2}}"
+        [[1, 2, 3], [-1, -2], [1, -3]],         # (p OR q OR r) AND (NOT p OR NOT q) AND (p OR NOT r)
+        [[1, -2], [2, -3], [-1, 3], [-3]],      # (p OR NOT q) AND (q OR NOT r) AND (NOT p OR r) AND (NOT r)
+        [[-1, 2], [1, -3], [3]],                # (NOT p OR q) AND (p OR NOT r) AND (r)
+        [[-1, -2, -3], [-1, 2, 3], [1, -2]],    # (NOT p OR NOT q OR NOT r) AND (NOT p OR q OR r) AND (p OR NOT q)
+        [[1, 2], [-1, 3], [-2, 3], [-3]],       # (p OR q) AND (NOT p OR r) AND (NOT q OR r) AND (NOT r)
+        [[-1, 2], [-2, 3], [-3, 4], [-4]],      # (NOT p OR q) AND (NOT q OR r) AND (NOT r OR s) AND (NOT s)
+        [[1], [-1], [2], [-2]],                 # (p) AND (NOT p) AND (q) AND (NOT q)
+        [[1, -2, 3], [-1, 2], [2, -3]]          # (p OR NOT q OR r) AND (NOT p OR q) AND (q OR NOT r)
     ]
-
-    for i, formula_str in enumerate(forma_clausal, 1):
-        formula = parse_formula(formula_str)
+    
+    # Evaluar cada fórmula
+    for i, formula in enumerate(forma_clausal, 1):
         resultado, asignacion = DPLL(formula, {})
-        print(f"Fórmula {i}: {formula_str}")
+        print(f"Fórmula {i}: {formato_conjunto(formula)}")
         if resultado:
             print("Satisfacible con asignación:", asignacion)
         else:
-            print("Insatisfacible")
+            print("Insatisfacible con asignación vacía")
         print()
-        
-        
+
+
 main()
