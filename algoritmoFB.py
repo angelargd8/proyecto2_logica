@@ -45,6 +45,8 @@ formulas = [
     [{1, 2}, {-1, 3}, {-2, 3}, {-3}],      #(p OR q) AND (NOT p OR r) AND (NOT q OR r) AND (NOT r)
     [{-1, 2}, {-2, 3}, {-3, 4}, {-4}],     #(NOT p OR q) AND (NOT q OR r) AND (NOT r OR s) AND (NOT s) 
     [{1}, {-1}, {2}, {-2}],                #(p) AND (NOT p) AND (q) AND (NOT q)
+    [{-1,-2,-3}, {2,-3,1},{-1,2,3}],
+    [{3},{-2,-3},{-1,2,-3},{2}],
     [{1, -2, 3}, {-1, 2}, {2, -3}],        #(p OR NOT q OR NOT r) AND (NOT p or q) AND (q OR NOT r)
 ]
 
